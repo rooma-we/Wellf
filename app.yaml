@@ -1,0 +1,32 @@
+# app.yaml — دیپلوی WelfVita Gateway (کانتینر Docker) روی Wasmer Edge
+# پیش‌نیاز: اول یک بار ایمیج بسازید و پوش کنید:
+#   wasmer deploy --registry-push --publish-app
+# (یا ایمیج را به ghcr.io پوش کنید و package را به آن تغییر دهید)
+kind: wasmer.io/App.v0
+package: 'welfvita/welfvita-gateway'
+description: WelfVita Gateway — panel + relay (VLESS/Trojan/SS over WS & XHTTP)
+
+# اپ شبکه‌ای (ریلی TCP به مقصدهای دلخواه + وب‌سوکت) — دسترسی کامل outbound
+capabilities:
+  network: ['outbound']
+
+# WebSocket فعال (کلاینت‌های VPN با wss وصل می‌شوند)
+annotations:
+  wasmer.io/app.v0.beta-2.experimental-websockets: 'true'
+
+# ماندگاری state پنل و ریلی
+volumes:
+  - name: welfvita-data
+    mount: /app/data
+
+# دامنه لینک‌ها خودکار از هدر Host ساخته می‌شود؛ PUBLIC_DOMAIN لازم نیست
+env: {}
+
+health_checks:
+  - http:
+      method: get
+      path: /health
+      interval: 30s
+      timeout: 10s
+      healthy_threshold: 1
+      unhealthy_threshold: 3

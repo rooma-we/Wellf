@@ -1,0 +1,36 @@
+# wasmer.toml — بسته‌بندی پنل WelfVita Gateway برای Wasmer Edge
+# دیپلوی: wasmer deploy (از داخل همین پوشه)
+[package]
+name = "welfvita/php-panel"
+version = "9.2.0"
+description = "WelfVita Gateway — multi-protocol proxy management panel (PHP edition)"
+entrypoint = "server"
+license = "SEE LICENSE IN ../LICENSE"
+
+# PHP 8.3 رسمی Wasmer (نسخه php-eh با پشتیبانی exception handling)
+[dependencies]
+"php/php-eh" = "=8.3.404-beta.2"
+
+# نگاشت فایل‌ها: کل پنل داخل /app در کانتینر
+[fs]
+"/app" = "./"
+
+[[command]]
+name = "server"
+module = "php/php-eh:php"
+runner = "wasi"
+
+# نکته مهم: index.php خودش مسیریاب کامله (همان نقش .htaccess را بازی می‌کند)
+# پس به سرور داخلی PHP به‌عنوان router script داده می‌شود.
+[command.annotations.wasi]
+main-args = [
+  "-t", "/app",
+  "-S", "127.0.0.1:8080",
+  "/app/index.php",
+  "-d", "memory_limit=256M",
+  "-d", "max_execution_time=120",
+  "-d", "upload_max_filesize=20M",
+  "-d", "post_max_size=20M",
+  "-d", "display_errors=0",
+  "-d", "log_errors=1",
+]
